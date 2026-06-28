@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gadafi AI — Your Personal Intelligence System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --black: #080A0F;
+    --deep: #0D1117;
+    --panel: #111827;
+    --border: #1F2937;
+    --gold: #F5A623;
+    --gold-dim: #A06B10;
+    --gold-glow: rgba(245,166,35,0.15);
+    --cyan: #00D4FF;
+    --cyan-dim: rgba(0,212,255,0.1);
+    --red: #FF4444;
+    --green: #00FF88;
+    --text: #E5E7EB;
+    --muted: #6B7280;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* AMBIENT BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(245,166,35,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(0,212,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 120px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 24px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--gold);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: -1px;
+  }
+
+  .logo-text {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 2px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ACTIVE AGENT BANNER */
+  .agent-banner {
+    margin: 16px 20px;
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .agent-icon { font-size: 18px; }
+
+  .agent-info { flex: 1; }
+
+  .agent-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-family: var(--mono);
+  }
+
+  .agent-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  /* TRANSCRIPT AREA */
+  .transcript-area {
+    margin: 0 20px;
+    height: 340px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 4px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .transcript-area::-webkit-scrollbar { width: 4px; }
+  .transcript-area::-webkit-scrollbar-track { background: transparent; }
+  .transcript-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    padding: 0 4px;
+  }
+
+  .msg-bubble {
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 92%;
+  }
+
+  .msg.user .msg-bubble {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    align-self: flex-end;
+    border-radius: 12px 12px 2px 12px;
+  }
+
+  .msg.user .msg-label { align-self: flex-end; }
+
+  .msg.gadafi .msg-bubble {
+    background: linear-gradient(135deg, rgba(245,166,35,0.08), rgba(245,166,35,0.03));
+    border: 1px solid rgba(245,166,35,0.2);
+    color: var(--text);
+    align-self: flex-start;
+    border-radius: 12px 12px 12px 2px;
+  }
+
+  .msg.gadafi .msg-label { color: var(--gold-dim); }
+
+  .msg.system .msg-bubble {
+    background: var(--cyan-dim);
+    border: 1px solid rgba(0,212,255,0.15);
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 12px;
+    align-self: center;
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  /* WAVEFORM / LISTENING INDICATOR */
+  .listening-indicator {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 16px;
+  }
+
+  .listening-indicator.active { display: flex; }
+
+  .wave-bar {
+    width: 3px;
+    background: var(--gold);
+    border-radius: 2px;
+    animation: wave 0.8s ease-in-out infinite;
+  }
+
+  .wave-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+  .wave-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+  .wave-bar:nth-child(3) { height: 32px; animation-delay: 0.2s; }
+  .wave-bar:nth-child(4) { height: 20px; animation-delay: 0.3s; }
+  .wave-bar:nth-child(5) { height: 8px; animation-delay: 0.4s; }
+  .wave-bar:nth-child(6) { height: 20px; animation-delay: 0.1s; }
+  .wave-bar:nth-child(7) { height: 32px; animation-delay: 0.2s; }
+  .wave-bar:nth-child(8) { height: 20px; animation-delay: 0.3s; }
+  .wave-bar:nth-child(9) { height: 8px; animation-delay: 0s; }
+
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  /* THINKING INDICATOR */
+  .thinking {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    margin: 0 20px;
+    background: var(--gold-glow);
+    border: 1px solid rgba(245,166,35,0.15);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--gold);
+    font-family: var(--mono);
+  }
+
+  .thinking.active { display: flex; }
+
+  .think-dots span {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: dot-pulse 1.2s infinite;
+    margin: 0 1px;
+  }
+
+  .think-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .think-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dot-pulse {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* AGENTS GRID */
+  .agents-section {
+    margin: 16px 20px 0;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+
+  .agents-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .agent-chip {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .agent-chip:hover, .agent-chip.active {
+    border-color: var(--gold);
+    background: var(--gold-glow);
+  }
+
+  .agent-chip-icon { font-size: 18px; }
+
+  .agent-chip-name {
+    font-size: 9px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+  }
+
+  .agent-chip.active .agent-chip-name { color: var(--gold); }
+
+  /* BOTTOM CONTROLS */
+  .controls {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: linear-gradient(to top, var(--black) 70%, transparent);
+    padding: 16px 20px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mic-btn {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    border: none;
+    background: var(--gold);
+    color: var(--black);
+    font-size: 26px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 0 rgba(245,166,35,0.4);
+    position: relative;
+  }
+
+  .mic-btn:hover { transform: scale(1.05); }
+
+  .mic-btn.listening {
+    background: var(--red);
+    box-shadow: 0 0 0 12px rgba(255,68,68,0.15), 0 0 0 24px rgba(255,68,68,0.05);
+    animation: mic-pulse 1.5s infinite;
+  }
+
+  @keyframes mic-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,68,68,0.4), 0 0 0 0 rgba(255,68,68,0.2); }
+    70% { box-shadow: 0 0 0 14px rgba(255,68,68,0), 0 0 0 28px rgba(255,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,68,68,0), 0 0 0 0 rgba(255,68,68,0); }
+  }
+
+  .mic-btn.speaking {
+    background: var(--cyan);
+    animation: speak-pulse 0.8s infinite alternate;
+  }
+
+  @keyframes speak-pulse {
+    from { box-shadow: 0 0 8px rgba(0,212,255,0.4); }
+    to { box-shadow: 0 0 24px rgba(0,212,255,0.8); }
+  }
+
+  .controls-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .ctrl-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 12px;
+    font-family: var(--mono);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .ctrl-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .mic-status {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* TEXT INPUT ROW */
+  .text-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .text-input {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 10px 16px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--sans);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .text-input:focus { border-color: var(--gold); }
+  .text-input::placeholder { color: var(--muted); }
+
+  .send-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: var(--gold);
+    color: var(--black);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .send-btn:hover { transform: scale(1.08); }
+
+  /* API KEY SETUP */
+  .setup-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .setup-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .setup-logo {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 4px;
+  }
+
+  .setup-sub {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .setup-input {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--mono);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+
+  .setup-input:focus { border-color: var(--gold); }
+
+  .setup-btn {
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .setup-btn:hover { opacity: 0.9; }
+
+  .setup-note {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    font-family: var(--mono);
+  }
+
+  /* SCROLLBAR FOR TRANSCRIPT */
+  .transcript-wrap {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin: 12px 0 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div class="setup-screen" id="setupScreen">
+  <div class="setup-card">
+    <div class="setup-logo">GADAFI</div>
+    <p class="setup-sub">Your personal AI intelligence system.<br>Enter your free Groq API key to activate.</p>
+    <input class="setup-input" type="password" id="apiKeyInput" placeholder="gsk_..." />
+    <button class="setup-btn" onclick="activateSystem()">ACTIVATE SYSTEM</button>
+    <p class="setup-note">100% free — no card needed.<br>Get your key at console.groq.com → API Keys</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp" style="display:none">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-mark">G·AI</div>
+      <span class="logo-text">GADAFI</span>
+    </div>
+    <div class="status-dot" id="statusDot"></div>
+  </div>
+
+  <!-- ACTIVE AGENT -->
+  <div class="agent-banner">
+    <div class="agent-icon" id="activeAgentIcon">🧠</div>
+    <div class="agent-info">
+      <div class="agent-label">Active Agent</div>
+      <div class="agent-name" id="activeAgentName">Orchestrator — Ready</div>
+    </div>
+  </div>
+
+  <!-- TRANSCRIPT -->
+  <div class="transcript-area" id="transcript">
+    <div class="msg system">
+      <div class="msg-bubble">System online. Say "Hey Gadafi" or tap the mic.</div>
+    </div>
+  </div>
+
+  <!-- THINKING -->
+  <div class="thinking" id="thinking">
+    <span id="thinkingAgent">🧠 Gadafi</span>
+    <div class="think-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- LISTENING WAVE -->
+  <div class="listening-indicator" id="listeningIndicator">
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+  </div>
+
+  <!-- AGENTS GRID -->
+  <div class="agents-section">
+    <div class="section-label">Your Agents</div>
+    <div class="agents-grid" id="agentsGrid">
+      <div class="agent-chip active" data-agent="orchestrator" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">🧠</div>
+        <div class="agent-chip-name">Brain</div>
+      </div>
+      <div class="agent-chip" data-agent="trading" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">📈</div>
+        <div class="agent-chip-name">Trading</div>
+      </div>
+      <div class="agent-chip" data-agent="dev" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">💻</div>
+        <div class="agent-chip-name">Dev</div>
+      </div>
+      <div class="agent-chip" data-agent="business" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">💼</div>
+        <div class="agent-chip-name">Hustle</div>
+      </div>
+      <div class="agent-chip" data-agent="content" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">🎙️</div>
+        <div class="agent-chip-name">Content</div>
+      </div>
+      <div class="agent-chip" data-agent="social" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">📱</div>
+        <div class="agent-chip-name">Social</div>
+      </div>
+      <div class="agent-chip" data-agent="trainer" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">🏋️</div>
+        <div class="agent-chip-name">Trainer</div>
+      </div>
+      <div class="agent-chip" data-agent="finance" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">💰</div>
+        <div class="agent-chip-name">Finance</div>
+      </div>
+      <div class="agent-chip" data-agent="hustle_campus" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">🏫</div>
+        <div class="agent-chip-name">Campus</div>
+      </div>
+      <div class="agent-chip" data-agent="briefing" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">🌅</div>
+        <div class="agent-chip-name">Briefing</div>
+      </div>
+      <div class="agent-chip" data-agent="kenya" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">🌍</div>
+        <div class="agent-chip-name">Kenya</div>
+      </div>
+      <div class="agent-chip" data-agent="general" onclick="selectAgent(this)">
+        <div class="agent-chip-icon">⚡</div>
+        <div class="agent-chip-name">General</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <!-- Text input -->
+    <div class="text-row">
+      <input class="text-input" type="text" id="textInput" placeholder="Type to Gadafi..." />
+      <button class="send-btn" onclick="sendText()">➤</button>
+    </div>
+
+    <!-- Mic -->
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+    <div class="mic-status" id="micStatus">Tap to speak</div>
+
+    <div class="controls-row">
+      <button class="ctrl-btn" onclick="clearChat()">Clear</button>
+      <button class="ctrl-btn" onclick="stopSpeaking()">Stop</button>
+      <button class="ctrl-btn" onclick="morningBriefing()">Briefing</button>
+      <button class="ctrl-btn" onclick="resetKey()">Key</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+let apiKey = '';
+let currentAgent = 'orchestrator';
+let isListening = false;
+let isSpeaking = false;
+let recognition = null;
+let synth = window.speechSynthesis;
+let voices = [];
+let conversationHistory = [];
+let selectedVoice = null;
+
+// ─── AGENTS ──────────────────────────────────────────────
+const AGENTS = {
+  orchestrator: {
+    icon: '🧠', name: 'Orchestrator',
+    prompt: `You are Gadafi, a sharp, confident personal AI chief of staff built for Alex — a self-taught Kenyan developer, author, forex trader, and digital entrepreneur behind Gadafi Developers, Modern Hustle platform, 19Coins Hotel delivery app, and Aurumflow AI trading bot. You are not a generic assistant. You know Alex's world deeply.
+
+Your personality: direct, smart, motivational. Like a trusted advisor who's also a best friend. Never robotic. Speak like a knowledgeable peer, not a search engine. Keep responses concise — Alex is on mobile. Use short paragraphs. Maximum 3-4 sentences per response unless detail is needed.
+
+When Alex asks about trading → answer as a forex/crypto expert with SMC knowledge.
+When Alex asks about coding → answer as a senior developer who knows his stack (HTML, Supabase, JavaScript, GitHub Pages).
+When Alex asks about content or podcast → answer as a creative director.
+When Alex asks about fitness → answer as a personal trainer.
+When Alex asks about business → answer as a African digital entrepreneurship coach.
+When Alex asks about finance → answer as a financial coach focused on Kenyan markets and M-Pesa.
+When Alex mentions Modern Hustle → you know it's his Africa-first edtech platform with 5 campuses.
+When Alex mentions 19Coins → you know it's his hotel food delivery app in Isiolo and Meru, Kenya.
+When Alex mentions Aurumflow → you know it's his Telegram forex signal bot using SMC analysis.
+
+Always end responses with something actionable or a sharp insight. Never say "As an AI" or "I cannot". Just help.`
+  },
+  trading: {
+    icon: '📈', name: 'Trading Agent',
+    prompt: `You are Gadafi's Trading Agent — Alex's personal forex and crypto analyst. You specialize in Smart Money Concepts (SMC), ICT methodology, Gold (XAU/USD), EURUSD, and GBPUSD. Alex runs Aurumflow AI, a Telegram signal bot using SMC on M15/H1/H4 timeframes.
+
+Your role: Give sharp trading insights, explain market structure, identify key levels, discuss sessions (London/New York/killzones), and help Alex think through trades. When discussing signals, reference order blocks, fair value gaps, liquidity sweeps, and break of structure. Be precise. Use numbers. Avoid vague advice. Alex is an educated trader — speak at that level.
+
+Keep responses concise and mobile-friendly. No fluff.`
+  },
+  dev: {
+    icon: '💻', name: 'Dev Agent',
+    prompt: `You are Gadafi's Dev Agent — Alex's senior developer partner. Alex builds everything as single HTML files using vanilla JavaScript, Supabase (PostgreSQL + Auth + Storage), GitHub Pages hosting, IntaSend M-Pesa payments, and Africa's Talking SMS API. He codes entirely from a mobile phone.
+
+Your role: Debug code by voice description, suggest fixes, explain errors in plain English, generate complete ready-to-use code snippets. Always give complete solutions — never partial snippets that need manual editing. When Alex describes a bug, diagnose it precisely. When he needs a feature, build it in code. Keep explanations brief but complete.`
+  },
+  business: {
+    icon: '💼', name: 'Business Agent',
+    prompt: `You are Gadafi's Business Agent — Alex's African digital entrepreneurship coach. Alex runs Gadafi Developers (dev agency), Modern Hustle (edtech), 19Coins (food delivery), and Aurumflow (trading signals). He monetizes across Kenya and the African diaspora.
+
+Your role: Help Alex close deals, write proposals, track clients, practice pitches, identify revenue opportunities, and think strategically. You understand African markets, M-Pesa economy, mobile-first audiences, and digital entrepreneurship in Kenya. Give sharp, practical business advice that actually works in the African context. No Western-centric generic advice.`
+  },
+  content: {
+    icon: '🎙️', name: 'Content Agent',
+    prompt: `You are Gadafi's Content Agent — Alex's creative director and podcast producer. Alex creates content around trading, digital entrepreneurship, self-development, and African hustle. He has a self-help ebook ("Become The Man They Respect") and runs a podcast.
+
+Your role: Refine podcast scripts, write viral hooks and headlines, repurpose ideas across platforms, structure episodes, write captions, generate content calendars, and turn voice notes into polished content. Match Alex's voice: confident, direct, real, African perspective, speaks to young men building wealth. When given a rough idea, sharpen it into something publishable immediately.`
+  },
+  social: {
+    icon: '📱', name: 'Social Media Agent',
+    prompt: `You are Gadafi's Social Media Agent — Alex's content distribution engine. Alex posts on Twitter/X, Telegram, Instagram, Facebook, and LinkedIn about trading, tech, entrepreneurship, and African hustle.
+
+Your role: Write platform-native posts from voice ideas, generate hashtags, create captions for each platform with the right tone and length, suggest posting times, and repurpose one idea into multiple platform-specific formats. Twitter: punchy and direct. LinkedIn: professional but real. Instagram: visual storytelling captions. Telegram: broadcast style. Always include a call to action. Make every post feel like it came from a real person, not a bot.`
+  },
+  trainer: {
+    icon: '🏋️', name: 'Personal Trainer',
+    prompt: `You are Gadafi's Personal Trainer — Alex's fitness and health coach. Your role: design and guide workouts verbally, count reps, motivate, track progress, suggest nutrition, and keep Alex consistent. You know he's an entrepreneur with a busy schedule, so workouts must be efficient. Bodyweight or gym — both are fine. Give specific rep counts, rest times, and form cues. Be energetic and motivating. When Alex says he's starting a workout, guide him through it step by step. Track what he tells you about sets and reps.`
+  },
+  finance: {
+    icon: '💰', name: 'Finance Agent',
+    prompt: `You are Gadafi's Finance Agent — Alex's money clarity coach for the Kenyan market. You understand M-Pesa, mobile banking, Kenyan shillings, forex income, digital product revenue, and building wealth as an African entrepreneur.
+
+Your role: Track income and expenses by voice, summarize revenue, remind about payments, help Alex think through financial decisions, and coach on wealth-building in the African context. When Alex tells you about a transaction, log it in the conversation. Give practical financial advice that works with KES, USD, and the realities of Kenyan business. No generic Western financial advice.`
+  },
+  hustle_campus: {
+    icon: '🏫', name: 'Modern Hustle Campus',
+    prompt: `You are the Modern Hustle Campus Agent — the AI tutor for Alex's Africa-first digital education platform. Modern Hustle has 5 campuses: Forex & Crypto, AI & Automation, App Building, Content Creation, and Digital Business.
+
+Your role: Teach campus content by voice, answer student questions, explain concepts clearly for African audiences, and help Alex develop curriculum. When teaching, use simple language, real African examples, and practical steps someone can start today with a smartphone. Alex is the founder — help him think through course content, student engagement, and campus growth strategies too.`
+  },
+  briefing: {
+    icon: '🌅', name: 'Daily Briefing Agent',
+    prompt: `You are Gadafi's Daily Briefing Agent. Your role: deliver sharp, energizing morning and evening briefings for Alex.
+
+Morning briefing format: Start with a powerful one-liner motivation. Then: what to focus on today (top 3 priorities), key market context (forex/gold), one business action to take, and a closing fire line.
+
+Evening debrief format: Acknowledge what was accomplished, identify what to carry forward, give one insight from the day, and close with tomorrow's intention.
+
+Keep briefings punchy and spoken — no bullet points in your response, just natural speech that sounds great when read aloud. Alex is building an empire from Kenya. Speak to that energy.`
+  },
+  kenya: {
+    icon: '🌍', name: 'Kenya Agent',
+    prompt: `You are Gadafi's Kenya Agent — deeply rooted in the Kenyan and East African business, tech, and cultural context. You understand M-Pesa, Safaricom, the Nairobi tech scene, SME challenges in Kenya, Isiolo and Meru as markets, the African diaspora opportunity, and building digital businesses for African audiences.
+
+Your role: Give advice tuned to the Kenyan market, help Alex navigate local business realities, discuss opportunities in the African digital economy, and provide culturally relevant insights. You can switch between English and simple Swahili when appropriate. You know the challenges — power, internet, mobile-first users, M-Pesa as primary payment — and give advice that works within those realities.`
+  },
+  general: {
+    icon: '⚡', name: 'General Agent',
+    prompt: `You are Gadafi — Alex's sharp, all-purpose AI assistant. Alex is a Kenyan developer, trader, author, and entrepreneur building multiple digital businesses from a mobile phone. 
+
+Answer anything Alex asks with intelligence and brevity. Be direct. Be useful. No filler. Keep responses short enough to read on a mobile screen. If Alex needs something done, figure out how to do it or give him the exact steps. You're the smartest person in the room who also genuinely wants Alex to win.`
+  }
+};
+
+// ─── INIT ─────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('gadafi_api_key');
+  if (saved) { apiKey = saved; showApp(); }
+  loadVoices();
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+  // Text input enter key
+  document.getElementById('textInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendText();
+  });
+});
+
+function loadVoices() {
+  voices = synth.getVoices();
+  // Prefer a deep male voice
+  const preferred = ['Google UK English Male', 'Microsoft David', 'Alex', 'Daniel'];
+  for (let p of preferred) {
+    const v = voices.find(v => v.name.includes(p.split(' ')[1]) || v.name === p);
+    if (v) { selectedVoice = v; break; }
+  }
+  if (!selectedVoice && voices.length > 0) {
+    selectedVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+  }
+}
+
+function activateSystem() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key || !key.startsWith('gsk_')) {
+    document.getElementById('apiKeyInput').style.borderColor = '#FF4444';
+    document.getElementById('apiKeyInput').placeholder = 'Must start with gsk_...';
+    return;
+  }
+  apiKey = key;
+  localStorage.setItem('gadafi_api_key', key);
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  setTimeout(() => speak("Gadafi online. Good to have you back, Alex. What do we need to handle?"), 800);
+}
+
+function resetKey() {
+  localStorage.removeItem('gadafi_api_key');
+  location.reload();
+}
+
+// ─── AGENT SELECTION ──────────────────────────────────────
+function selectAgent(el) {
+  document.querySelectorAll('.agent-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentAgent = el.dataset.agent;
+  const agent = AGENTS[currentAgent];
+  document.getElementById('activeAgentIcon').textContent = agent.icon;
+  document.getElementById('activeAgentName').textContent = agent.name + ' — Ready';
+  addMessage('system', `Switched to ${agent.name}`);
+}
+
+// ─── SPEECH RECOGNITION ──────────────────────────────────
+function toggleMic() {
+  if (isListening) { stopListening(); return; }
+  startListening();
+}
+
+function startListening() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    addMessage('system', 'Voice not supported. Use text input below.');
+    return;
+  }
+  if (isSpeaking) { synth.cancel(); isSpeaking = false; }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('listeningIndicator').classList.add('active');
+    document.getElementById('micStatus').textContent = 'Listening...';
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    stopListening();
+    handleInput(transcript);
+  };
+
+  recognition.onerror = (e) => {
+    stopListening();
+    if (e.error !== 'no-speech') addMessage('system', 'Mic error: ' + e.error);
+  };
+
+  recognition.onend = () => stopListening();
+  recognition.start();
+}
+
+function stopListening() {
+  isListening = false;
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
+  document.getElementById('micBtn').classList.remove('listening');
+  document.getElementById('listeningIndicator').classList.remove('active');
+  document.getElementById('micStatus').textContent = 'Tap to speak';
+}
+
+// ─── TEXT INPUT ───────────────────────────────────────────
+function sendText() {
+  const input = document.getElementById('textInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  handleInput(text);
+}
+
+// ─── MAIN INPUT HANDLER ───────────────────────────────────
+async function handleInput(text) {
+  addMessage('user', text);
+  showThinking(true);
+  try {
+    const response = await callClaude(text);
+    showThinking(false);
+    addMessage('gadafi', response);
+    speak(response);
+  } catch (err) {
+    showThinking(false);
+    const errMsg = 'Connection issue. Check your API key or internet.';
+    addMessage('system', errMsg);
+    speak(errMsg);
+  }
+}
+
+// ─── GROQ API ─────────────────────────────────────────────
+async function callClaude(userMessage) {
+  const agent = AGENTS[currentAgent];
+
+  // Add to history
+  conversationHistory.push({ role: 'user', content: userMessage });
+
+  // Keep history manageable
+  if (conversationHistory.length > 20) {
+    conversationHistory = conversationHistory.slice(-20);
+  }
+
+  // Build messages with system prompt
+  const messages = [
+    { role: 'system', content: agent.prompt },
+    ...conversationHistory
+  ];
+
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 600,
+      temperature: 0.7,
+      messages: messages
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error?.message || 'Groq API error');
+  }
+
+  const data = await response.json();
+  const reply = data.choices[0].message.content;
+
+  // Add assistant reply to history
+  conversationHistory.push({ role: 'assistant', content: reply });
+
+  return reply;
+}
+
+// ─── SPEECH SYNTHESIS ─────────────────────────────────────
+function speak(text) {
+  if (!synth) return;
+  synth.cancel();
+
+  // Clean text for speech
+  const clean = text.replace(/[*_#`]/g, '').replace(/\n+/g, '. ');
+
+  const utter = new SpeechSynthesisUtterance(clean);
+  if (selectedVoice) utter.voice = selectedVoice;
+  utter.rate = 0.95;
+  utter.pitch = 0.85;
+  utter.volume = 1;
+
+  utter.onstart = () => {
+    isSpeaking = true;
+    document.getElementById('micBtn').classList.add('speaking');
+    document.getElementById('micBtn').textContent = '🔊';
+  };
+
+  utter.onend = () => {
+    isSpeaking = false;
+    document.getElementById('micBtn').classList.remove('speaking');
+    document.getElementById('micBtn').textContent = '🎤';
+    document.getElementById('micStatus').textContent = 'Tap to speak';
+  };
+
+  synth.speak(utter);
+}
+
+function stopSpeaking() {
+  synth.cancel();
+  isSpeaking = false;
+  document.getElementById('micBtn').classList.remove('speaking');
+  document.getElementById('micBtn').textContent = '🎤';
+}
+
+// ─── UI HELPERS ───────────────────────────────────────────
+function addMessage(type, text) {
+  const area = document.getElementById('transcript');
+  const div = document.createElement('div');
+  div.className = `msg ${type}`;
+
+  if (type === 'system') {
+    div.innerHTML = `<div class="msg-bubble">${text}</div>`;
+  } else {
+    const label = type === 'user' ? 'You' : `${AGENTS[currentAgent]?.icon || '🧠'} Gadafi`;
+    div.innerHTML = `
+      <div class="msg-label">${label}</div>
+      <div class="msg-bubble">${text}</div>
+    `;
+  }
+
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function showThinking(show) {
+  const agent = AGENTS[currentAgent];
+  document.getElementById('thinking').classList.toggle('active', show);
+  document.getElementById('thinkingAgent').textContent = `${agent.icon} ${agent.name}`;
+}
+
+function clearChat() {
+  document.getElementById('transcript').innerHTML = '';
+  conversationHistory = [];
+  addMessage('system', 'Chat cleared. Ready.');
+}
+
+// ─── MORNING BRIEFING ─────────────────────────────────────
+function morningBriefing() {
+  const hour = new Date().getHours();
+  const period = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  const day = new Date().toLocaleDateString('en-KE', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  // Switch to briefing agent
+  document.querySelectorAll('.agent-chip').forEach(c => {
+    if (c.dataset.agent === 'briefing') { selectAgent(c); }
+  });
+
+  const prompt = `Give me a ${period} briefing for today, ${day}. I'm Alex — entrepreneur, trader, developer. Make it sharp and energizing.`;
+  handleInput(prompt);
+}
+</script>
+</body>
+</html>
